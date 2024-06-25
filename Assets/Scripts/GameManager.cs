@@ -6,27 +6,30 @@ using static UnityEngine.EventSystems.EventTrigger;
 public class GameManager : MonoBehaviour
 {
     public bool inputEnabled { get; private set; } 
-    public GameState currentState {  get; private set; }
+    public GameState currentState { get; private set; }
     public UIManager uiManager;
+    [Header("Characters")]
     public Player player;
     public Enemy enemy;
     private FightOutcome fightOutcome;
 
-    // Start is called before the first frame update
+    #region Unity Lifecycle Methods
     void Start()
     {
         currentState = GameState.ChoosingAction;
         StartCoroutine(ChoosingActionSequence());
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if(currentState == GameState.ChoosingAction && inputEnabled)
+        if (currentState == GameState.ChoosingAction && inputEnabled)
         {
             HandleActionSelectionInput();
         }
     }
+    #endregion
+
+    #region Action Handling
     private void HandleActionSelectionInput()
     {
         if (Input.GetKeyDown(KeyCode.E))
@@ -37,68 +40,46 @@ public class GameManager : MonoBehaviour
 
     public void SelectAction(Action selectedAction)
     {
-        player.RegisterAction(selectedAction);
-        StartFight();
+        if (selectedAction == Action.HEAL)
+        {
+            player.PerformAction_HEAL();
+            HandleActionSelectionInput();
+        }
+        else
+        {
+            player.RegisterAction(selectedAction);
+            StartFight();
+        }
     }
+
     private void HandleEnemyActionSelection()
     {
         enemy.ChooseAction();
     }
+    #endregion
+
+    #region Fight Handling
     private void StartFight()
     {
         currentState = GameState.Fighting;
         HandleEnemyActionSelection();
         StartCoroutine(ProcessFightSequence());
-
     }
+
     public void CheckIfFightEnds()
     {
-        if(enemy.health <= 0)
+        if (enemy.health <= 0)
         {
             currentState = GameState.Victory;
+            StartCoroutine(ProcessVictorySequence());
         }
-        else if(player.health <= 0) 
+        else if (player.health <= 0)
         {
             currentState = GameState.Defeat;
+            StartCoroutine(ProcessDefeatSequence());
         }
-        else { }
     }
-    private IEnumerator ProcessFightSequence()
-    {
-        inputEnabled = false;
-        string text = "Your action: " + player.lastUsedAction.ToString() + "\nEnemy action: " + enemy.lastUsedAction.ToString();
-        uiManager.DisplayComment(text);
-        yield return new WaitForSeconds(1);
-        fightOutcome = ResolveFight(player.lastUsedAction, enemy.lastUsedAction);
-        /*uiManager.DisplayFightOutcome(fightOutcome);*/
-    }
-    private IEnumerator ChoosingActionSequence()
-    {
-        uiManager.DisplayComment("Choose an action!");
-        yield return new WaitForSeconds(1);
-
-        currentState = GameState.ChoosingAction;
-        inputEnabled = true;
-    }
-    private IEnumerator StartIntroSequence()
-    {
-        yield return new WaitForSeconds(1);
-    }
-    private IEnumerator StartDamageSequence(Character character)
-    {
-        int damage = UnityEngine.Random.Range(10, 20);
-        character.ApplyDamage(damage);
-        if(character == enemy)
-        {
-            uiManager.DisplayComment("Good job!\nDamage dealth to the enemy: " + damage.ToString());
-        }
-        else
-        {
-            uiManager.DisplayComment("Oh no!\nDamage dealth to you: " + damage.ToString());
-        }
-        yield return new WaitForSeconds(1.5f);
-        StartCoroutine(ChoosingActionSequence());
-    }
+    
     public FightOutcome ResolveFight(Action playerAction, Action enemyAction)
     {
         bool playerWins = (playerAction == Action.HISS && enemyAction == Action.STANCE) ||
@@ -124,41 +105,84 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
     private void HandlePlayerWinning()
     {
         StartCoroutine(StartDamageSequence(enemy));
-        if (enemy.CheckIfStillAlive(enemy.health))
-        {
-            currentState = GameState.ChoosingAction;
-        }
-        else
-        {
-            currentState = GameState.Victory;
-        }
+        currentState = enemy.CheckIfStillAlive(enemy.health) ? GameState.ChoosingAction : GameState.Victory;
     }
+
     private void HandleEnemyWinning()
     {
         StartCoroutine(StartDamageSequence(player));
-        if (player.CheckIfStillAlive(player.health))
-        {
-            currentState = GameState.ChoosingAction;
-        }
-        else
-        {
-            currentState = GameState.Defeat;
-        }
+        currentState = player.CheckIfStillAlive(player.health) ? GameState.ChoosingAction : GameState.Defeat;
     }
 
-  
     private IEnumerator HandleDrawOutcome()
     {
         uiManager.DisplayComment("It's a draw!");
-        currentState = GameState.ChoosingAction;
-        StartCoroutine(ChoosingActionSequence());
         yield return new WaitForSeconds(1.5f);
         StartCoroutine(ChoosingActionSequence());
     }
+    #endregion
+
+    #region Sequences
+    private IEnumerator ChoosingActionSequence()
+    {
+        uiManager.DisplayComment("Choose an action!");
+        yield return new WaitForSeconds(1);
+
+        currentState = GameState.ChoosingAction;
+        inputEnabled = true;
+    }
+
+    private IEnumerator ProcessFightSequence()
+    {
+        inputEnabled = false;
+        string text = "Your action: " + player.lastUsedAction.ToString() + "\nEnemy action: " + enemy.lastUsedAction.ToString();
+        uiManager.DisplayComment(text);
+        yield return new WaitForSeconds(1);
+        fightOutcome = ResolveFight(player.lastUsedAction, enemy.lastUsedAction);
+    }
+    public IEnumerator ProcessVictorySequence()
+    {
+        ProcessFightOutcomeUI("YOU WON!\nTHE ENEMY HAS BEEN DEFEATED");
+        yield return new WaitForSeconds(1);
+    }
+
+    public IEnumerator ProcessDefeatSequence()
+    {
+        ProcessFightOutcomeUI("YOU LOST!\nYOU HAVE BEEN DEFEATED");
+        yield return new WaitForSeconds(1);
+    }
+    
+    private void ProcessFightOutcomeUI(String text)
+    {
+        inputEnabled = false;
+        uiManager.EnableFightOutcomeDisplay(true);
+        uiManager.DisplayFightOutcomeComment(text);
+    }
+    private IEnumerator StartIntroSequence()
+    {
+        yield return new WaitForSeconds(1);
+    }
+
+    private IEnumerator StartDamageSequence(Character character)
+    {
+        int damage = UnityEngine.Random.Range(10, 20);
+        if (damage > character.health)
+            damage = character.health;
+        character.ApplyDamage(damage);
+        uiManager.DisplayDamageComment(character, damage);
+        CheckIfFightEnds();
+        yield return new WaitForSeconds(1.5f);
+        StartCoroutine(ChoosingActionSequence());
+    }
+    #endregion
+
 }
+
+#region Enums
 
 public enum GameState
 {
@@ -175,3 +199,6 @@ public enum FightOutcome
     Lose,
     Draw
 }
+
+#endregion
+
