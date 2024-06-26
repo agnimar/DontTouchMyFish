@@ -1,8 +1,8 @@
+using System.Collections;
 using TMPro;
 using TMPro.EditorUtilities;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
@@ -49,6 +49,10 @@ public class UIManager : MonoBehaviour
         {
             button.onClick.AddListener(() => gameManager.SelectAction((Action)System.Array.IndexOf(buttons, button)));
         }
+        // Add listeners for end game buttons
+        playAgainButton.onClick.AddListener(PlayAgain);
+        quitToMenuButton.onClick.AddListener(QuitToMenu);
+        exitGameButton.onClick.AddListener(ExitGame);
     }
     private void UpdateButtonInteractivity()
     {
@@ -92,6 +96,28 @@ public class UIManager : MonoBehaviour
             DisplayComment($"Oh no!\nDamage dealt to you: {damage}");
         }
     }
+    public IEnumerator DisplayEnemyHealingComment(string comment)
+    {
+        dialogueText.text = comment;
+        yield return new WaitForSeconds(1.5f);
+    }
+    // End game button methods
+    private void PlayAgain()
+    {
+        // Reset game logic, could involve reloading the current scene
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
 
-    
+    private void QuitToMenu()
+    {
+        // Load main menu scene, replace "MainMenu" with the actual main menu scene name
+        SceneManager.LoadScene("MainMenuScene");
+    }
+
+    private void ExitGame()
+    {
+        // Quit the application
+        Application.Quit();
+    }
 }
+

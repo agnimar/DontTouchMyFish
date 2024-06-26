@@ -1,15 +1,23 @@
+using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
-public class Enemy : Character 
+public class Enemy : Character
 {
-    public void ChooseAction()
+    public UIManager uIManager;
+    public GameManager gameManager;
+    public void Update()
     {
-        if (health <= 40 && !healingUsed)
+        if (health <= 40 && !healingUsed && gameManager.currentState == GameState.ChoosingAction)
         {
             PerformAction_HEAL();
             healingUsed = true;
-            Debug.Log("Enemy Healed");
+            StartCoroutine(uIManager.DisplayEnemyHealingComment("Enemy healed"));
         }
+    }
+
+    public void ChooseAction()
+    {
         PerformAttack();
     }
 

@@ -13,6 +13,7 @@ public class Character : MonoBehaviour
     void Start()
     {
         health = 100;
+        healingUsed = false;
     }
     public void RegisterAction(Action action)
     {
@@ -32,23 +33,8 @@ public class Character : MonoBehaviour
     public void ApplyDamage(int damage)
     {
         health -= damage;
+        Debug.Log($"{GetType().Name} has {health} health remaining after taking {damage} damage.");
     }
-    /*public void PerformAction_HISS()
-    {
-        lastUsedAction = Action.HISS;
-        RegisterAction(lastUsedAction);
-    }
-    public void PerformAction_PAWN()
-    {
-        lastUsedAction = Action.PAWN;
-        RegisterAction(lastUsedAction);
-    }
-    public void PerformAction_STANCE()
-    {
-        lastUsedAction = Action.STANCE;
-        RegisterAction(lastUsedAction);
-    }*/
-
     public bool CheckIfStillAlive(int health)
     {
         if (health <= 0)

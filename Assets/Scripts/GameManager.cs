@@ -43,7 +43,6 @@ public class GameManager : MonoBehaviour
         if (selectedAction == Action.HEAL)
         {
             player.PerformAction_HEAL();
-            HandleActionSelectionInput();
         }
         else
         {
@@ -129,11 +128,10 @@ public class GameManager : MonoBehaviour
     #region Sequences
     private IEnumerator ChoosingActionSequence()
     {
+        inputEnabled = true;
         uiManager.DisplayComment("Choose an action!");
         yield return new WaitForSeconds(1);
-
         currentState = GameState.ChoosingAction;
-        inputEnabled = true;
     }
 
     private IEnumerator ProcessFightSequence()
