@@ -1,10 +1,12 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Random = UnityEngine.Random;
 
 public class Character : MonoBehaviour
 {
-    public int health ;//{ get { return health; } private set {health = value; } } 
+    public int health;
     public string name;
     public bool healingUsed;
     public Queue<Action> usedAttackQueue = new Queue<Action>();
@@ -15,6 +17,12 @@ public class Character : MonoBehaviour
         health = 100;
         healingUsed = false;
     }
+
+    void Update()
+    {
+        
+    }
+
     public void RegisterAction(Action action)
     {
         lastUsedAction = action;
@@ -50,6 +58,7 @@ public class Character : MonoBehaviour
     {
         var healingPoints = Random.Range(15, 25);
         health += healingPoints;
+        Debug.Log("health after healing" + health);
     }
 }
     

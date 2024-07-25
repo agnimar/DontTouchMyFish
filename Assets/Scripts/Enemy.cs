@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -14,18 +15,16 @@ public class Enemy : Character
             healingUsed = true;
             StartCoroutine(uIManager.DisplayEnemyHealingComment("Enemy healed"));
         }
+        Debug.Log("Enemy health " + health);
     }
 
     public void ChooseAction()
-    {
-        PerformAttack();
-    }
-
-    private void PerformAttack()
     {
         lastUsedAction = (Action)Random.Range(0, 3);
         Debug.Log("Enemy action: " + lastUsedAction);
         RegisterAction(lastUsedAction);
     }
+
+    
 }
 

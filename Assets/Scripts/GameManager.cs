@@ -22,29 +22,21 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (currentState == GameState.ChoosingAction && inputEnabled)
-        {
-            HandleActionSelectionInput();
-        }
+
     }
     #endregion
 
     #region Action Handling
-    private void HandleActionSelectionInput()
-    {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            SelectAction(player.lastUsedAction);
-        }
-    }
 
     public void SelectAction(Action selectedAction)
     {
-        if (selectedAction == Action.HEAL)
+        if (inputEnabled && selectedAction == Action.HEAL)
         {
             player.PerformAction_HEAL();
+            Debug.Log("health after healing in GM" + player.health);
+            StartCoroutine(ChoosingActionSequence());
         }
-        else
+        else if(inputEnabled && (selectedAction == Action.PAWN || selectedAction == Action.HISS || selectedAction == Action.STANCE))
         {
             player.RegisterAction(selectedAction);
             StartFight();
@@ -76,6 +68,11 @@ public class GameManager : MonoBehaviour
         {
             currentState = GameState.Defeat;
             StartCoroutine(ProcessDefeatSequence());
+        }
+        else
+        {
+            currentState = GameState.ChoosingAction;
+            StartCoroutine(ChoosingActionSequence());
         }
     }
     
@@ -131,7 +128,6 @@ public class GameManager : MonoBehaviour
         inputEnabled = true;
         uiManager.DisplayComment("Choose an action!");
         yield return new WaitForSeconds(1);
-        currentState = GameState.ChoosingAction;
     }
 
     private IEnumerator ProcessFightSequence()
@@ -145,12 +141,18 @@ public class GameManager : MonoBehaviour
     public IEnumerator ProcessVictorySequence()
     {
         ProcessFightOutcomeUI("YOU WON!\nTHE ENEMY HAS BEEN DEFEATED");
+        currentState = GameState.Victory;
+        inputEnabled = false;
+
         yield return new WaitForSeconds(1);
     }
 
     public IEnumerator ProcessDefeatSequence()
     {
         ProcessFightOutcomeUI("YOU LOST!\nYOU HAVE BEEN DEFEATED");
+        currentState = GameState.Defeat;
+        inputEnabled = false;
+
         yield return new WaitForSeconds(1);
     }
     
@@ -172,9 +174,8 @@ public class GameManager : MonoBehaviour
             damage = character.health;
         character.ApplyDamage(damage);
         uiManager.DisplayDamageComment(character, damage);
-        CheckIfFightEnds();
         yield return new WaitForSeconds(1.5f);
-        StartCoroutine(ChoosingActionSequence());
+        CheckIfFightEnds();
     }
     #endregion
 
@@ -188,7 +189,8 @@ public enum GameState
     ChoosingAction,
     Fighting,
     Victory,
-    Defeat
+    Defeat, 
+    Healing
 }
 
 public enum FightOutcome
