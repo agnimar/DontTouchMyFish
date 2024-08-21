@@ -24,7 +24,4 @@ public class Enemy : Character
         Debug.Log("Enemy action: " + lastUsedAction);
         RegisterAction(lastUsedAction);
     }
-
-    
 }
-

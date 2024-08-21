@@ -5,7 +5,7 @@ using static UnityEngine.EventSystems.EventTrigger;
 
 public class GameManager : MonoBehaviour
 {
-    public bool inputEnabled { get; private set; } 
+    public bool inputEnabled { get; private set; }
     public GameState currentState { get; private set; }
     public UIManager uiManager;
     [Header("Characters")]
@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
             Debug.Log("health after healing in GM" + player.health);
             StartCoroutine(ChoosingActionSequence());
         }
-        else if(inputEnabled && (selectedAction == Action.PAWN || selectedAction == Action.HISS || selectedAction == Action.STANCE))
+        else if (inputEnabled && (selectedAction == Action.PAW || selectedAction == Action.HISS || selectedAction == Action.STANCE))
         {
             player.RegisterAction(selectedAction);
             StartFight();
@@ -75,12 +75,12 @@ public class GameManager : MonoBehaviour
             StartCoroutine(ChoosingActionSequence());
         }
     }
-    
+
     public FightOutcome ResolveFight(Action playerAction, Action enemyAction)
     {
         bool playerWins = (playerAction == Action.HISS && enemyAction == Action.STANCE) ||
-                          (playerAction == Action.STANCE && enemyAction == Action.PAWN) ||
-                          (playerAction == Action.PAWN && enemyAction == Action.HISS);
+                          (playerAction == Action.STANCE && enemyAction == Action.PAW) ||
+                          (playerAction == Action.PAW && enemyAction == Action.HISS);
 
         if (playerAction == enemyAction)
         {
@@ -137,6 +137,9 @@ public class GameManager : MonoBehaviour
         uiManager.DisplayComment(text);
         yield return new WaitForSeconds(1);
         fightOutcome = ResolveFight(player.lastUsedAction, enemy.lastUsedAction);
+
+        player.ResetToIdle();
+        enemy.ResetToIdle();
     }
     public IEnumerator ProcessVictorySequence()
     {
@@ -155,7 +158,7 @@ public class GameManager : MonoBehaviour
 
         yield return new WaitForSeconds(1);
     }
-    
+
     private void ProcessFightOutcomeUI(String text)
     {
         inputEnabled = false;
@@ -189,7 +192,7 @@ public enum GameState
     ChoosingAction,
     Fighting,
     Victory,
-    Defeat, 
+    Defeat,
     Healing
 }
 
@@ -201,4 +204,3 @@ public enum FightOutcome
 }
 
 #endregion
-

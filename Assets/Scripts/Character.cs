@@ -12,21 +12,26 @@ public class Character : MonoBehaviour
     public Queue<Action> usedAttackQueue = new Queue<Action>();
     public Action lastUsedAction;
 
+    public SpriteRenderer spriteRenderer;  
+    public Sprite[] actionSprites;
+
     void Start()
     {
         health = 100;
         healingUsed = false;
+        SetActionSprite(Action.IDLE);
     }
 
     void Update()
     {
-        
+
     }
 
     public void RegisterAction(Action action)
     {
         lastUsedAction = action;
         usedAttackQueue.Enqueue(action);
+        SetActionSprite(action); 
         LogQueue();
     }
     private void LogQueue()
@@ -45,27 +50,30 @@ public class Character : MonoBehaviour
     }
     public bool CheckIfStillAlive(int health)
     {
-        if (health <= 0)
-        {
-            return false;
-        }
-        else 
-        {
-            return true;
-        }
+        return health > 0;
     }
     public void PerformAction_HEAL()
     {
         var healingPoints = Random.Range(15, 25);
         health += healingPoints;
         Debug.Log("health after healing" + health);
+        SetActionSprite(Action.HEAL); // Update sprite for healing action
+    }
+    public void SetActionSprite(Action action)
+    {
+        spriteRenderer.sprite = actionSprites[(int)action];
+    }
+    public void ResetToIdle()
+    {
+        SetActionSprite(Action.IDLE);
     }
 }
-    
+
 public enum Action
 {
     HISS,
-    PAWN,
+    PAW,
     STANCE,
-    HEAL
+    HEAL,
+    IDLE
 }

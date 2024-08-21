@@ -8,7 +8,7 @@ public class UIManager : MonoBehaviour
 {
     [Header("UI Elements")]
     public UnityEngine.UI.Button hissButton;
-    public UnityEngine.UI.Button pawnButton;
+    public UnityEngine.UI.Button pawButton;
     public UnityEngine.UI.Button stanceButton;
     public UnityEngine.UI.Button healButton;
     private UnityEngine.UI.Button[] buttons;
@@ -22,20 +22,24 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI enemyStats;
     public TextMeshProUGUI fightOutcomeText;
 
-    [Header("Panels")] 
+    [Header("Panels")]
     public GameObject fightOutcomePanel;
-    
+    public GameObject actionChoicePanel;
+    public GameObject enemyStatsPanel;
+    public GameObject playerStatsPanel;
+
     [Header("Game Manager")]
     public GameManager gameManager;
 
     [Header("Characters")]
     public Player player;
     public Enemy enemy;
-    
+
     void Start()
     {
         InitializeButtons();
         EnableFightOutcomeDisplay(false);
+        EnableFightDisplay(true);
     }
     private void Update()
     {
@@ -44,7 +48,7 @@ public class UIManager : MonoBehaviour
     }
     public void InitializeButtons()
     {
-        buttons = new UnityEngine.UI.Button[] { hissButton, pawnButton, stanceButton, healButton };
+        buttons = new UnityEngine.UI.Button[] { hissButton, pawButton, stanceButton, healButton };
         foreach (var button in buttons)
         {
             button.onClick.AddListener(() => gameManager.SelectAction((Action)System.Array.IndexOf(buttons, button)));
@@ -76,6 +80,12 @@ public class UIManager : MonoBehaviour
     public void EnableFightOutcomeDisplay(bool isActive)
     {
         fightOutcomePanel.SetActive(isActive);
+    }
+    public void EnableFightDisplay(bool isActive)
+    {
+        playerStatsPanel.SetActive(isActive);
+        actionChoicePanel.SetActive(isActive);
+        enemyStatsPanel.SetActive(isActive);
     }
     public void DisplayComment(string comment)
     {
@@ -120,4 +130,3 @@ public class UIManager : MonoBehaviour
         Application.Quit();
     }
 }
-
