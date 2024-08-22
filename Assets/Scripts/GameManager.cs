@@ -34,6 +34,7 @@ public class GameManager : MonoBehaviour
         {
             player.PerformAction_HEAL();
             Debug.Log("health after healing in GM" + player.health);
+            StartCoroutine(ProcessHealingAnimation(player));
             StartCoroutine(ChoosingActionSequence());
         }
         else if (inputEnabled && (selectedAction == Action.PAW || selectedAction == Action.HISS || selectedAction == Action.STANCE))
@@ -104,20 +105,20 @@ public class GameManager : MonoBehaviour
 
     private void HandlePlayerWinning()
     {
-        StartCoroutine(StartDamageSequence(enemy));
+        StartCoroutine(StartDamageSequence(enemy, player));
         currentState = enemy.CheckIfStillAlive(enemy.health) ? GameState.ChoosingAction : GameState.Victory;
     }
 
     private void HandleEnemyWinning()
     {
-        StartCoroutine(StartDamageSequence(player));
+        StartCoroutine(StartDamageSequence(player, enemy));
         currentState = player.CheckIfStillAlive(player.health) ? GameState.ChoosingAction : GameState.Defeat;
     }
 
     private IEnumerator HandleDrawOutcome()
     {
         uiManager.DisplayComment("It's a draw!");
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(1f);
         StartCoroutine(ChoosingActionSequence());
     }
     #endregion
@@ -125,9 +126,12 @@ public class GameManager : MonoBehaviour
     #region Sequences
     private IEnumerator ChoosingActionSequence()
     {
+        yield return new WaitForSeconds(0.3f);
         inputEnabled = true;
         uiManager.DisplayComment("Choose an action!");
-        yield return new WaitForSeconds(1);
+
+        player.ResetToIdle();
+        enemy.ResetToIdle();
     }
 
     private IEnumerator ProcessFightSequence()
@@ -135,11 +139,9 @@ public class GameManager : MonoBehaviour
         inputEnabled = false;
         string text = "Your action: " + player.lastUsedAction.ToString() + "\nEnemy action: " + enemy.lastUsedAction.ToString();
         uiManager.DisplayComment(text);
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(1f);
         fightOutcome = ResolveFight(player.lastUsedAction, enemy.lastUsedAction);
 
-        player.ResetToIdle();
-        enemy.ResetToIdle();
     }
     public IEnumerator ProcessVictorySequence()
     {
@@ -147,7 +149,7 @@ public class GameManager : MonoBehaviour
         currentState = GameState.Victory;
         inputEnabled = false;
 
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(1f);
     }
 
     public IEnumerator ProcessDefeatSequence()
@@ -156,7 +158,7 @@ public class GameManager : MonoBehaviour
         currentState = GameState.Defeat;
         inputEnabled = false;
 
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(1f);
     }
 
     private void ProcessFightOutcomeUI(String text)
@@ -167,18 +169,26 @@ public class GameManager : MonoBehaviour
     }
     private IEnumerator StartIntroSequence()
     {
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(1f);
     }
 
-    private IEnumerator StartDamageSequence(Character character)
+    private IEnumerator StartDamageSequence(Character winningCharacter, Character losingCharacter)
     {
         int damage = UnityEngine.Random.Range(10, 20);
-        if (damage > character.health)
-            damage = character.health;
-        character.ApplyDamage(damage);
-        uiManager.DisplayDamageComment(character, damage);
-        yield return new WaitForSeconds(1.5f);
+        if (damage > winningCharacter.health)
+            damage = winningCharacter.health;
+
+        winningCharacter.SetRoundWinSprite();
+        losingCharacter.SetRoundLoseSprite();
+        winningCharacter.ApplyDamage(damage);
+        uiManager.DisplayDamageComment(winningCharacter, damage);
+        yield return new WaitForSeconds(0.5f);
         CheckIfFightEnds();
+    }
+    private IEnumerator ProcessHealingAnimation(Character character)
+    {
+        character.SetActionSprite(Action.HEAL);
+        yield return new WaitForSeconds(0.3f);
     }
     #endregion
 
