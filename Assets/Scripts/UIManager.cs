@@ -109,7 +109,7 @@ public class UIManager : MonoBehaviour
     public IEnumerator DisplayEnemyHealingComment(string comment)
     {
         dialogueText.text = comment;
-        enemy.SetActionSprite(Action.HEAL);
+        enemy.SetSprite(Action.HEAL);
         yield return new WaitForSeconds(1.5f);
     }
     // End game button methods

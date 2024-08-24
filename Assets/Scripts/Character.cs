@@ -7,43 +7,41 @@ using Random = UnityEngine.Random;
 
 public class Character : MonoBehaviour
 {
+    // Public fields
     public int health;
     public bool healingUsed;
     public Queue<Action> usedAttackQueue = new Queue<Action>();
     public Action lastUsedAction;
-
+    
+    // UI elements
     public SpriteRenderer spriteRenderer;  
     public Sprite[] actionSprites;
     public Sprite roundWinSprite;
     public Sprite roundLoseSprite;
 
+    // Constants
+    private const int InitialHealth = 100;
+    private const int MinHealingPoints = 15;
+    private const int MaxHealingPoints = 25;
+
     void Start()
     {
-        health = 100;
+        health = InitialHealth;
         healingUsed = false;
-        SetActionSprite(Action.IDLE);
+        SetSprite(Action.IDLE);
     }
 
-    void Update()
+    /*void Update()
     {
 
-    }
+    }*/
 
     public void RegisterAction(Action action)
     {
         lastUsedAction = action;
         usedAttackQueue.Enqueue(action);
-        SetActionSprite(action); 
+        SetSprite(action); 
         LogQueue();
-    }
-    private void LogQueue()
-    {
-        string queueContents = "Current Attack Queue: ";
-        foreach (var act in usedAttackQueue)
-        {
-            queueContents += act.ToString() + " ";
-        }
-        Debug.Log(queueContents);
     }
     public void ApplyDamage(int damage)
     {
@@ -54,30 +52,58 @@ public class Character : MonoBehaviour
     {
         return health > 0;
     }
-    public void PerformAction_HEAL()
+    public void PerformHealAction()
     {
-        var healingPoints = Random.Range(15, 25);
+        int healingPoints = Random.Range(MinHealingPoints, MaxHealingPoints);
         health += healingPoints;
-        Debug.Log("health after healing" + health);
-    }
-    public void SetActionSprite(Action action)
-    {
-        spriteRenderer.sprite = actionSprites[(int)action];
+        Debug.Log($"Health after healing: {health}");
     }
     public void ResetToIdle()
     {
-        SetActionSprite(Action.IDLE);
+        SetSprite(Action.IDLE);
     }
+
     public void SetRoundWinSprite()
     {
-        spriteRenderer.sprite = roundWinSprite;
+        SetSprite(roundWinSprite);
     }
 
     public void SetRoundLoseSprite()
     {
-        spriteRenderer.sprite = roundLoseSprite;
+        SetSprite(roundLoseSprite);
     }
 
+    private void SetSprite(Sprite sprite)
+    {
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.sprite = sprite;
+        }
+        else
+        {
+            Debug.LogError("SpriteRenderer is not assigned!");
+        }
+    }
+
+    public void SetHealingActionSprite()
+    {
+        SetSprite(Action.HEAL);
+    }
+
+    // Overloaded private method to set action sprites
+    private void SetSprite(Action action)
+    {
+        spriteRenderer.sprite = actionSprites[(int)action];
+    }
+    private void LogQueue()
+    {
+        string queueContents = "Current Attack Queue: ";
+        foreach (var act in usedAttackQueue)
+        {
+            queueContents += $"{act} ";
+        }
+        Debug.Log(queueContents);
+    }
 }
 
 public enum Action
